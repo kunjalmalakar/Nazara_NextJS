@@ -1,0 +1,14 @@
+import type { Metadata } from "next";
+import { policies } from "@/lib/content";
+import { PolicyPage } from "@/components/PolicyPage";
+
+const p = policies["shipping-policy"];
+
+export const metadata: Metadata = {
+  title: `${p.title} — Nazara Diamonds`,
+  description: p.intro,
+};
+
+export default function Page() {
+  return <PolicyPage {...p} />;
+}
