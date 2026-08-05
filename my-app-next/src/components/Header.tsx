@@ -44,6 +44,8 @@ const categoryColumns = [
 const earringsLinks = ["Studs", "Hoops", "Drops", "Jhumkas"];
 const pendantsLinks = ["Solitaire Pendants", "Alphabet Pendants", "Heart Pendants"];
 
+const searchTerms = ["rings", "earrings", "necklaces", "bracelets", "pendants"];
+
 export function Header() {
   const { cartCount, wishlist, setCartOpen, setLoginOpen } = useShop();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -54,6 +56,34 @@ export function Header() {
   const [productsTab, setProductsTab] = useState<"Rings" | "Pendant" | "Necklace">("Rings");
   const router = useRouter();
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const [placeholderText, setPlaceholderText] = useState("");
+  const [currentTermIndex, setCurrentTermIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const typingSpeed = isDeleting ? 50 : 100;
+    const currentTerm = searchTerms[currentTermIndex];
+    
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        if (placeholderText.length < currentTerm.length) {
+          setPlaceholderText(currentTerm.slice(0, placeholderText.length + 1));
+        } else {
+          setTimeout(() => setIsDeleting(true), 1500);
+        }
+      } else {
+        if (placeholderText.length > 0) {
+          setPlaceholderText(currentTerm.slice(0, placeholderText.length - 1));
+        } else {
+          setIsDeleting(false);
+          setCurrentTermIndex((prev) => (prev + 1) % searchTerms.length);
+        }
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timeout);
+  }, [placeholderText, isDeleting, currentTermIndex]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -116,13 +146,13 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur transition-all duration-300 ${
+      className={`sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur transition-all duration-700 ${
         scrolled ? "shadow-md border-border/80" : ""
       }`}
     >
       {/* Row 1: Logo, Search Bar, Action Buttons */}
       <div
-        className={`container-site flex items-center justify-between gap-4 transition-all duration-300 ${
+        className={`container-site flex items-center justify-between gap-4 transition-all duration-700 ${
           scrolled ? "pt-1.5 pb-1" : "pt-3.5 pb-2"
         }`}
       >
@@ -146,14 +176,14 @@ export function Header() {
         {/* Center: Luxury Interactive Search Bar */}
         <div
           ref={searchContainerRef}
-          className="relative flex-1 max-w-[200px] xs:max-w-[280px] sm:max-w-[360px] md:max-w-[460px] lg:max-w-[540px] mx-auto"
+          className="relative w-full max-w-[200px] xs:max-w-[280px] sm:max-w-[360px] md:max-w-[400px] lg:max-w-[460px] ml-auto mr-1 sm:mr-3"
         >
           <form onSubmit={submitSearch} className="relative w-full">
             <div
-              className={`relative flex items-center w-full rounded-[18px] border-2 transition-all duration-300 p-1 ${
+              className={`relative flex items-center w-full rounded-lg border-2 transition-all duration-300 p-1 bg-transparent ${
                 searchFocused
-                  ? "bg-gradient-to-b from-[#faf6f3] to-[#f4ebe5] border-[#4c2344] shadow-[0_12px_32px_rgba(76,35,68,0.22),inset_0_1px_2px_rgba(255,255,255,0.9)] ring-2 ring-[#4c2344]/20"
-                  : "bg-gradient-to-b from-[#fbf8f5] to-[#f3ece6] border-[#4c2344]/40 shadow-[0_8px_24px_rgba(0,0,0,0.14),0_2px_6px_rgba(76,35,68,0.1)] hover:border-[#4c2344] hover:shadow-[0_10px_28px_rgba(76,35,68,0.18)]"
+                  ? "border-[#4c2344] shadow-md ring-2 ring-[#4c2344]/20"
+                  : "border-[#4c2344]/40 shadow-sm hover:border-[#4c2344]"
               }`}
             >
               <div className="pl-3 pr-2 text-[#4c2344]">
@@ -167,7 +197,7 @@ export function Header() {
                   setQuery(e.target.value);
                   setSearchFocused(true);
                 }}
-                placeholder="Search lab-grown rings, necklaces, bracelets..."
+                placeholder={`Search for ${placeholderText}|`}
                 className="w-full bg-transparent py-1.5 pr-10 text-xs sm:text-sm text-[#4c2344] outline-none placeholder:text-[#4c2344]/60 font-medium tracking-wide"
               />
               {query ? (
@@ -175,18 +205,11 @@ export function Header() {
                   type="button"
                   onClick={() => setQuery("")}
                   aria-label="Clear search"
-                  className="absolute right-12 text-[#4c2344]/60 hover:text-primary transition-colors p-1"
+                  className="absolute right-3 text-[#4c2344]/60 hover:text-primary transition-colors p-1"
                 >
                   <X size={14} />
                 </button>
               ) : null}
-              <button
-                type="submit"
-                aria-label="Submit search"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#4c2344] text-white border border-[#663253]/30 shadow-[0_3px_10px_rgba(76,35,68,0.3)] hover:bg-[#381932] hover:shadow-[0_4px_14px_rgba(76,35,68,0.45)] active:scale-95 transition-all cursor-pointer"
-              >
-                <ArrowRight size={16} strokeWidth={2.2} />
-              </button>
             </div>
           </form>
 
@@ -342,24 +365,9 @@ export function Header() {
             aria-label="Account"
             onClick={() => setLoginOpen(true)}
             title="My Account"
-            className="hidden h-9 w-9 items-center justify-center rounded-full bg-primary text-white border border-white/10 shadow-sm transition-all duration-300 hover:bg-[#3b1b34] hover:border-gold/50 hover:scale-105 active:scale-95 cursor-pointer sm:flex"
+            className="hidden h-9 w-9 items-center justify-center rounded-full bg-transparent text-primary border-2 border-[#4c2344]/40 shadow-sm transition-all duration-300 hover:bg-primary/5 hover:border-[#4c2344] hover:scale-105 active:scale-95 cursor-pointer sm:flex"
           >
             <User size={17} />
-          </button>
-
-          {/* Cart Button */}
-          <button
-            aria-label="Cart"
-            onClick={() => setCartOpen(true)}
-            className="relative flex h-9 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold uppercase tracking-wider text-white border border-white/10 shadow-sm transition-all duration-300 hover:bg-[#3b1b34] hover:border-gold/50 hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <ShoppingCart size={16} />
-            <span className="hidden sm:inline font-sans tracking-wide">My Cart</span>
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 px-1 items-center justify-center rounded-full bg-gold text-[#220317] text-[9.5px] font-extrabold shadow-md border border-white animate-in zoom-in-50 duration-200">
-                {cartCount}
-              </span>
-            )}
           </button>
 
           {/* Wishlist Button */}
@@ -367,21 +375,36 @@ export function Header() {
             href="/wishlist"
             aria-label="Wishlist"
             title="View Wishlist"
-            className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white border border-white/10 shadow-sm transition-all duration-300 hover:bg-[#3b1b34] hover:border-gold/50 hover:scale-105 active:scale-95"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-primary border-2 border-[#4c2344]/40 shadow-sm transition-all duration-300 hover:bg-primary/5 hover:border-[#4c2344] hover:scale-105 active:scale-95"
           >
             <Star size={17} />
             {wishlist.length > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 px-1 items-center justify-center rounded-full bg-gold text-[#220317] text-[9.5px] font-extrabold shadow-md border border-white animate-in zoom-in-50 duration-200">
+              <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 px-1 items-center justify-center rounded-full bg-primary text-white text-[9.5px] font-extrabold shadow-md border border-background animate-in zoom-in-50 duration-200">
                 {wishlist.length}
               </span>
             )}
           </Link>
+
+          {/* Cart Button */}
+          <button
+            aria-label="Cart"
+            onClick={() => setCartOpen(true)}
+            title="My Cart"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-primary border-2 border-[#4c2344]/40 shadow-sm transition-all duration-300 hover:bg-primary/5 hover:border-[#4c2344] hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <ShoppingCart size={17} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 px-1 items-center justify-center rounded-full bg-primary text-white text-[9.5px] font-extrabold shadow-md border border-background animate-in zoom-in-50 duration-200">
+                {cartCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
       {/* Row 2: Navigation Links (Desktop only) */}
       <div
-        className={`hidden lg:block bg-background border-t border-border/40 transition-all duration-300 ${
+        className={`hidden lg:block bg-background transition-all duration-700 ${
           scrolled ? "py-1 text-[11px]" : "pt-1.5 pb-2 text-xs"
         }`}
       >
@@ -396,7 +419,7 @@ export function Header() {
               href="/products?highlight=bestseller" 
               className="py-2 transition-colors hover:text-gold"
             >
-              ready to ship
+              Ready To Ship
             </Link>
 
             {/* rings dropdown */}
@@ -405,7 +428,7 @@ export function Header() {
                 href="/products?category=rings" 
                 className="py-2 flex items-center gap-1 transition-colors hover:text-gold"
               >
-                rings <ChevronDown size={12} />
+                Rings <ChevronDown size={12} />
               </Link>
               <div className="invisible absolute left-1/2 top-full z-50 w-48 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 <div className="rounded-lg border border-border bg-card p-4 shadow-xl text-left normal-case tracking-normal">
@@ -425,13 +448,13 @@ export function Header() {
               </div>
             </div>
 
-            {/* earings dropdown */}
+            {/* earrings dropdown */}
             <div className="group relative">
               <Link 
                 href="/products?category=earrings" 
                 className="py-2 flex items-center gap-1 transition-colors hover:text-gold"
               >
-                earings <ChevronDown size={12} />
+                Earrings <ChevronDown size={12} />
               </Link>
               <div className="invisible absolute left-1/2 top-full z-50 w-48 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 <div className="rounded-lg border border-border bg-card p-4 shadow-xl text-left normal-case tracking-normal">
@@ -451,13 +474,13 @@ export function Header() {
               </div>
             </div>
 
-            {/* Pandents dropdown */}
+            {/* Pendants dropdown */}
             <div className="group relative">
               <Link 
                 href="/products?category=pendant" 
                 className="py-2 flex items-center gap-1 transition-colors hover:text-gold"
               >
-                Pandents <ChevronDown size={12} />
+                Pendants <ChevronDown size={12} />
               </Link>
               <div className="invisible absolute left-1/2 top-full z-50 w-48 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 <div className="rounded-lg border border-border bg-card p-4 shadow-xl text-left normal-case tracking-normal">
@@ -477,13 +500,13 @@ export function Header() {
               </div>
             </div>
 
-            {/* braclets dropdown */}
+            {/* bracelets dropdown */}
             <div className="group relative">
               <Link 
                 href="/products?category=bracelets-bangles" 
                 className="py-2 flex items-center gap-1 transition-colors hover:text-gold"
               >
-                braclets <ChevronDown size={12} />
+                Bracelets <ChevronDown size={12} />
               </Link>
               <div className="invisible absolute left-1/2 top-full z-50 w-48 -translate-x-1/2 translate-y-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 <div className="rounded-lg border border-border bg-card p-4 shadow-xl text-left normal-case tracking-normal">
@@ -513,18 +536,34 @@ export function Header() {
 
             {/* aabha */}
             <Link 
-              href="/products?q=aabha" 
+              href="/aabha" 
               className="py-2 transition-colors hover:text-gold"
             >
-              aabha
+              Aabha
             </Link>
 
             {/* luna */}
             <Link 
-              href="/products?q=luna" 
+              href="/luna" 
               className="py-2 transition-colors hover:text-gold"
             >
-              luna
+              Luna
+            </Link>
+
+            {/* gifting */}
+            <Link 
+              href="/products?highlight=gifting" 
+              className="py-2 transition-colors hover:text-gold"
+            >
+              Gifting
+            </Link>
+
+            {/* new launches */}
+            <Link 
+              href="/products?highlight=new" 
+              className="py-2 transition-colors hover:text-gold"
+            >
+              New Launches
             </Link>
           </nav>
         </div>
@@ -543,14 +582,16 @@ export function Header() {
             </div>
             <nav className="flex flex-col gap-1 text-sm" onClick={() => setMobileOpen(false)}>
               <Link href="/" className="rounded px-3 py-2.5 hover:bg-secondary">Home</Link>
-              <Link href="/products?highlight=bestseller" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">ready to ship</Link>
-              <Link href="/products?category=rings" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">rings</Link>
-              <Link href="/products?category=earrings" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">earings</Link>
-              <Link href="/products?category=pendant" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Pandents</Link>
-              <Link href="/products?category=bracelets-bangles" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">braclets</Link>
+              <Link href="/products?highlight=bestseller" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Ready To Ship</Link>
+              <Link href="/products?category=rings" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Rings</Link>
+              <Link href="/products?category=earrings" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Earrings</Link>
+              <Link href="/products?category=pendant" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Pendants</Link>
+              <Link href="/products?category=bracelets-bangles" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Bracelets</Link>
               <Link href="/products?purity=9KT" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">9KT</Link>
-              <Link href="/products?q=aabha" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">aabha</Link>
-              <Link href="/products?q=luna" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">luna</Link>
+              <Link href="/aabha" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Aabha</Link>
+              <Link href="/luna" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Luna</Link>
+              <Link href="/products?highlight=gifting" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Gifting</Link>
+              <Link href="/products?highlight=new" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">New Launches</Link>
               <div className="border-t border-border/60 my-2"></div>
               <Link href="/customize" className="rounded px-3 py-2.5 hover:bg-secondary">Customize</Link>
               <Link href="/about-us" className="rounded px-3 py-2.5 hover:bg-secondary">About Us</Link>

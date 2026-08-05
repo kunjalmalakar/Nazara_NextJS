@@ -99,7 +99,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-white/10 bg-[#3c1a35] py-4">
+      <div className="border-t border-white/10 bg-[#4c2344] py-4">
         <div className="container-site flex flex-col items-center justify-between gap-3 text-xs text-white/80 sm:flex-row">
           <p>© 2026 Lab Grown Diamond Jewellery in Indore</p>
           <div className="flex items-center gap-3.5">

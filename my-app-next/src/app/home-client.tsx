@@ -18,8 +18,21 @@ import bannerBracelets from "@/assets/banner-bracelets.jpg";
 import gallery1 from "@/assets/gallery-1.jpg";
 import gallery2 from "@/assets/gallery-2.jpg";
 import gallery3 from "@/assets/gallery-3.jpg";
+import forHim from "@/assets/for-him.png";
+import forHer from "@/assets/for-her.png";
+import bannerCustomise from "@/assets/banner-customise.png";
+import bannerLunaEdit from "@/assets/banner-luna-edit.png";
+import bannerBridalEdit from "@/assets/banner-bridal-edit.png";
+import bannerGiftingEdit from "@/assets/banner-gifting-edit.png";
 import pEarrings from "@/assets/p-earrings-studs.jpg";
 import pNecklace from "@/assets/p-necklace-layered.jpg";
+import pRingHalo from "@/assets/p-ring-halo.jpg";
+import pPendant from "@/assets/p-pendant-drop.jpg";
+import pBangle from "@/assets/p-bangle-gold.jpg";
+import pBracelet from "@/assets/p-bracelet-tennis.jpg";
+import pNecklaceKnot from "@/assets/p-necklace-knot.jpg";
+import pRingBand from "@/assets/p-ring-band.jpg";
+import pRingFancy from "@/assets/p-ring-fancy.jpg";
 import pendantHeart from "@/assets/pendant-heart.png";
 import bannerLuna from "@/assets/banner-luna.png";
 import galleryGrid1 from "@/assets/gallery-grid-1.png";
@@ -35,22 +48,22 @@ import storeReal from "@/assets/store-real.png";
 
 const slides = [
   {
-    img: hero1,
-    kicker: "New Collection",
-    title: "Brilliance, Grown Responsibly",
-    sub: "Certified lab-grown diamonds set in hallmarked gold.",
+    img: "/upper_1.png",
+    kicker: "",
+    title: "",
+    sub: "",
   },
   {
-    img: hero2,
-    kicker: "Engagement Edit",
-    title: "Say Yes to Ethical Sparkle",
-    sub: "Solitaires that shine brighter — for you and the planet.",
+    img: "/upper_2.png",
+    kicker: "",
+    title: "",
+    sub: "",
   },
   {
-    img: hero3,
-    kicker: "Bangles & Bracelets",
-    title: "Everyday Luxury, Perfected",
-    sub: "Handcrafted in Indore. Backed by a lifetime warranty.",
+    img: "/upper_3.png",
+    kicker: "",
+    title: "",
+    sub: "",
   },
 ];
 
@@ -149,7 +162,8 @@ function HeroSlider() {
                 alt={s.title}
                 priority={idx === 0}
                 loading={idx === 0 ? undefined : "lazy"}
-                className="h-full w-full object-cover select-none"
+                fill
+                className="object-fill select-none"
                 draggable={false}
               />
             </Link>
@@ -272,32 +286,32 @@ function BottomCollectionsSlider() {
 
   const slidesData = [
     {
-      img: gallery3,
-      title: "Gifting Edit",
-      kicker: "Spread Love",
-      sub: "Lab-grown diamonds crafted for your special someone.",
-      query: { highlight: "bestseller" },
+      img: bannerCustomise,
+      title: "Customise Your Diamond Jewellery",
+      kicker: "Bespoke Design",
+      sub: "Select metal, setting & diamond shape to craft your piece.",
+      query: { q: "solitaire" },
     },
     {
-      img: bannerLuna,
+      img: bannerLunaEdit,
       title: "Luna Silver Edit",
       kicker: "Silver Jewellery",
       sub: "Brilliant, premium 92.5 sterling silver collections.",
       query: { q: "luna" },
     },
     {
-      img: galleryGrid2,
+      img: bannerBridalEdit,
       title: "Aabha Bridal Luxury",
       kicker: "Wedding Collection",
       sub: "Royal necklaces and solitaires for your big day.",
       query: { q: "aabha" },
     },
     {
-      img: hero3,
-      title: "Daily Wear Sparkle",
-      kicker: "Everyday Luxury",
-      sub: "Minimalist bands, studs and everyday essentials.",
-      query: { category: "rings" },
+      img: bannerGiftingEdit,
+      title: "Gifting Edit",
+      kicker: "Spread Love",
+      sub: "Lab-grown diamonds crafted for your special someone.",
+      query: { highlight: "bestseller" },
     },
   ];
 
@@ -534,7 +548,7 @@ function VisitOurStores() {
       <div className="mt-4">
         <Link
           href="/contact-us"
-          className="inline-flex items-center gap-2 border border-black hover:border-gold hover:text-gold text-xs font-semibold uppercase tracking-widest py-2.5 px-7 transition-colors duration-300"
+          className="inline-flex items-center gap-2 border border-primary text-primary hover:border-gold hover:text-gold text-xs font-semibold uppercase tracking-widest py-2.5 px-7 transition-colors duration-300"
         >
           Find Your Nearest Store <span className="text-sm">→</span>
         </Link>
@@ -555,64 +569,112 @@ export function HomeClient() {
     <div>
       <HeroSlider />
 
-      <section className="container-site grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 pt-6 pb-10">
-        {[
-          { img: bannerEarrings, label: "Earrings", slug: "earrings" },
-          { img: bannerBracelets, label: "Bracelets & Bangles", slug: "bracelets-bangles" },
-          { img: pendantHeart, label: "Pendants", slug: "pendant" },
-          { img: hero2, label: "Rings", slug: "rings" },
-        ].map((b) => (
-          <Link
-            key={b.slug}
-            href={`/category/${b.slug}`}
-            className="group relative block overflow-hidden rounded-xl animate-fade-in"
-          >
-            <Image
-              src={b.img}
-              alt={b.label}
-              loading="lazy"
-              className="aspect-square w-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-foreground/75 to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6">
-              <h3 className="font-display text-lg sm:text-2xl font-semibold text-primary-foreground">
-                {b.label}
-              </h3>
-              <span className="mt-3 inline-flex items-center justify-center bg-white text-primary text-[10px] sm:text-xs uppercase tracking-wider font-bold py-1.5 px-4 rounded-full shadow-md group-hover:bg-gold group-hover:text-white transition-colors duration-300">
-                View All
+      <section className="w-full px-4 sm:px-6 pt-6 pb-10">
+        <SectionHeading title="Shop by Category" />
+        <div className="mt-6 grid grid-cols-10 gap-3">
+          {[
+            { img: pRingHalo,      label: "Rings",       slug: "rings" },
+            { img: pEarrings,      label: "Earrings",    slug: "earrings" },
+            { img: pPendant,       label: "Pendants",    slug: "pendant" },
+            { img: pBangle,        label: "Bangles",     slug: "bangles" },
+            { img: pBracelet,      label: "Bracelets",   slug: "bracelets" },
+            { img: pNecklaceKnot,  label: "Chains",      slug: "chains" },
+            { img: pRingBand,      label: "Nose Pins",   slug: "nose-pins" },
+            { img: pNecklace,      label: "Mangalsutra", slug: "mangalsutra" },
+            { img: pRingFancy,     label: "Men's",       slug: "mens" },
+          ].map((c) => (
+            <Link
+              key={c.slug}
+              href={`/category/${c.slug}`}
+              className="group flex flex-col items-center gap-2"
+            >
+              <div className="aspect-square w-full rounded-2xl bg-secondary overflow-hidden border border-border/40 transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
+                <Image
+                  src={c.img}
+                  alt={c.label}
+                  className="h-full w-full object-cover mix-blend-multiply"
+                />
+              </div>
+              <span className="text-center text-[11px] sm:text-xs font-medium text-foreground/80 group-hover:text-primary transition-colors leading-tight">
+                {c.label}
               </span>
+            </Link>
+          ))}
+
+          {/* View All tile */}
+          <Link
+            href="/products"
+            className="group flex flex-col items-center gap-2"
+          >
+            <div className="aspect-square w-full flex items-center justify-center rounded-2xl bg-secondary border border-border/40 transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
+              <div className="grid grid-cols-2 gap-2">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="h-4 w-4 rounded-full bg-primary/25 group-hover:bg-primary/50 transition-colors" />
+                ))}
+              </div>
             </div>
+            <span className="text-center text-[11px] sm:text-xs font-medium text-foreground/80 group-hover:text-primary transition-colors leading-tight">
+              View All
+            </span>
           </Link>
-        ))}
+        </div>
       </section>
 
-      <section className="container-site grid grid-cols-2 gap-4 md:gap-6 pb-10">
+      <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 py-8 pb-10 px-4 sm:px-6">
         {[
-          { img: gallery2, label: "For Her", query: "her", kicker: "Elegant Collections" },
-          { img: gallery1, label: "For Him", query: "him", kicker: "Bold & Classic" },
+          {
+            img: forHer,
+            label: "For Her",
+            query: "her",
+            kicker: "ELEGANT COLLECTIONS",
+            desc: "Grace in every sparkle, beauty in every detail. For every you.",
+            bg: "bg-[#f4efe8]",
+            textColor: "text-[#3b2234]",
+            descColor: "text-[#5a4454]",
+          },
+          {
+            img: forHim,
+            label: "For Him",
+            query: "him",
+            kicker: "BOLD & CLASSIC",
+            desc: "Timeless designs crafted for the modern man. Made to leave a mark.",
+            bg: "bg-[#2d292c]",
+            textColor: "text-white",
+            descColor: "text-white/80",
+          },
         ].map((c) => (
           <Link
             key={c.label}
             href={{ pathname: "/products", query: { q: c.query } }}
-            className="group relative block overflow-hidden rounded-2xl animate-fade-in"
+            className="group relative block overflow-hidden rounded-2xl"
           >
-            <Image
-              src={c.img}
-              alt={c.label}
-              loading="lazy"
-              className="aspect-[16/10] sm:aspect-[21/10] w-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/20 to-transparent" />
-            <div className="absolute inset-y-0 left-6 sm:left-12 flex flex-col justify-center text-left">
-              <span className="text-[10px] sm:text-xs uppercase tracking-widest text-gold font-bold">
-                {c.kicker}
-              </span>
-              <h3 className="font-display text-2xl sm:text-4xl font-semibold text-primary-foreground mt-1">
-                {c.label}
-              </h3>
-              <span className="mt-3 inline-flex w-fit items-center justify-center bg-white text-primary text-[10px] sm:text-xs uppercase tracking-wider font-bold py-1.5 px-5 rounded-full shadow-md group-hover:bg-gold group-hover:text-white transition-colors duration-300">
-                Shop Now
-              </span>
+            {/* Card panel */}
+            <div className={`relative h-[65vh] sm:h-[75vh] ${c.bg} flex items-center justify-center overflow-hidden`}>
+              <Image
+                src={c.img}
+                alt={c.label}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+
+              {/* Gradient overlay for readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:hidden" />
+
+              {/* Text overlay on left */}
+              <div className="absolute bottom-6 left-6 sm:bottom-12 sm:left-10 flex flex-col items-start z-10">
+                <span className="text-[10px] sm:text-xs uppercase tracking-widest text-[#c29b62] font-bold mb-1.5">
+                  {c.kicker}
+                </span>
+                <h3 className={`font-display text-3xl sm:text-5xl font-normal ${c.textColor} leading-tight`}>
+                  {c.label}
+                </h3>
+                <p className={`mt-3 text-xs sm:text-sm ${c.descColor} max-w-[180px] sm:max-w-[220px] leading-relaxed hidden sm:block`}>
+                  {c.desc}
+                </p>
+                <span className="mt-4 sm:mt-6 inline-flex w-fit items-center justify-center bg-white text-primary text-[10px] sm:text-xs uppercase tracking-wider font-bold py-2 px-6 rounded-full shadow-md group-hover:bg-gold group-hover:text-white transition-colors duration-300">
+                  Shop Now
+                </span>
+              </div>
             </div>
           </Link>
         ))}
@@ -639,7 +701,7 @@ export function HomeClient() {
         <div className="mt-4 flex justify-center">
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 border border-black hover:border-gold hover:text-gold text-xs font-semibold uppercase tracking-widest py-2.5 px-7 transition-colors duration-300"
+            className="inline-flex items-center gap-2 border border-primary text-primary hover:border-gold hover:text-gold text-xs font-semibold uppercase tracking-widest py-2.5 px-7 transition-colors duration-300"
           >
             View All <span className="text-sm">→</span>
           </Link>
@@ -651,6 +713,14 @@ export function HomeClient() {
       <section className="container-site pt-2 pb-8">
         <SectionHeading title="New Launches" />
         <ProductCarousel items={newLaunches} />
+        <div className="mt-4 flex justify-center">
+          <Link
+            href="/products?highlight=new"
+            className="inline-flex items-center gap-2 border border-primary text-primary hover:border-gold hover:text-gold text-xs font-semibold uppercase tracking-widest py-2.5 px-7 transition-colors duration-300"
+          >
+            View All <span className="text-sm">→</span>
+          </Link>
+        </div>
       </section>
 
       <VisitOurStores />

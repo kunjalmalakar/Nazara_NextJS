@@ -43,29 +43,41 @@
 
 :root {
   --radius: 0.375rem;
-  --background: oklch(0.982 0.005 85);
-  --foreground: oklch(0.24 0.02 330);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.02 330);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.02 330);
-  --primary: oklch(0.32 0.075 335);
-  --primary-foreground: oklch(0.982 0.005 85);
-  --secondary: oklch(0.94 0.012 80);
-  --secondary-foreground: oklch(0.3 0.04 330);
-  --muted: oklch(0.955 0.008 82);
-  --muted-foreground: oklch(0.5 0.02 330);
-  --accent: oklch(0.9 0.03 80);
-  --accent-foreground: oklch(0.32 0.075 335);
+  /* Pure White — page background */
+  --background: oklch(1 0 0);
+  /* Deep Plum #4c2344 — main text */
+  --foreground: oklch(0.26 0.08 340);
+  /* Card: slightly lighter blush-white */
+  --card: oklch(0.972 0.010 345);
+  --card-foreground: oklch(0.26 0.08 340);
+  --popover: oklch(0.972 0.010 345);
+  --popover-foreground: oklch(0.26 0.08 340);
+  /* Deep Plum/Aubergine #4c2344 — primary brand color */
+  --primary: oklch(0.28 0.09 340);
+  --primary-foreground: oklch(0.968 0.012 345);
+  /* Berry Purple #663253 — hover / active states */
+  --secondary: oklch(0.885 0.032 345);
+  --secondary-foreground: oklch(0.30 0.085 340);
+  /* Blush Muted surface */
+  --muted: oklch(0.915 0.022 345);
+  /* Muted Plum #865b75 — secondary text */
+  --muted-foreground: oklch(0.515 0.068 338);
+  /* Dusty Rose #c8a3b7 — accent highlights */
+  --accent: oklch(0.745 0.058 342);
+  --accent-foreground: oklch(0.26 0.08 340);
   --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(0.98 0.005 85);
-  --border: oklch(0.905 0.012 82);
-  --input: oklch(0.905 0.012 82);
-  --ring: oklch(0.72 0.085 80);
+  --destructive-foreground: oklch(0.972 0.010 345);
+  /* Dusty Rose border */
+  --border: oklch(0.878 0.030 344);
+  --input: oklch(0.878 0.030 344);
+  /* Dusty Rose focus ring */
+  --ring: oklch(0.745 0.058 342);
+  /* Gold — kept as luxury accent */
   --gold: oklch(0.72 0.085 80);
-  --gold-foreground: oklch(0.24 0.02 330);
-  --dark: oklch(0.22 0.03 330);
-  --dark-foreground: oklch(0.95 0.01 85);
+  --gold-foreground: oklch(0.26 0.08 340);
+  /* Darkest Plum — announcement bar, footer #3c1a35 range */
+  --dark: oklch(0.22 0.085 340);
+  --dark-foreground: oklch(0.955 0.015 345);
 }
 
 @layer base {

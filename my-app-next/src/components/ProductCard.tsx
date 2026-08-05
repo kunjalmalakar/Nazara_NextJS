@@ -147,7 +147,7 @@ export function ProductCard({
           </button>
         </div>
       </div>
-      <div className="flex flex-col items-center gap-1 p-4 text-center bg-[#f3f3f3] border-t border-border/30 flex-1 min-h-[125px]">
+      <div className="flex flex-col items-center gap-1 p-4 text-center bg-muted border-t border-border/30 flex-1 min-h-[125px]">
         <Link
           href={`/product/${product.slug}`}
           className="font-sans text-[14px] font-semibold text-primary transition-colors hover:text-gold line-clamp-1"

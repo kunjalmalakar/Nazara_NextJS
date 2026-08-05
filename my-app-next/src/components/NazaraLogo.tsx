@@ -17,8 +17,8 @@ export function NazaraLogo({
   size = "md",
 }: NazaraLogoProps) {
   const heightClasses = {
-    sm: "h-11 sm:h-12",
-    md: "h-16 sm:h-20 md:h-24",
+    sm: "h-10 sm:h-12 md:h-14",
+    md: "h-14 sm:h-20 md:h-24",
     lg: "h-24 sm:h-28 md:h-32",
     xl: "h-32 sm:h-40 md:h-48",
   };
