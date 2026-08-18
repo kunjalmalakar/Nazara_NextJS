@@ -10,14 +10,16 @@ import {
   Share2,
   Shuffle,
   Truck,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   formatINR,
   getProduct,
   priceBreakup,
-  products,
+  getAllProducts,
+  type Product,
 } from "@/lib/products";
 import { useShop } from "@/lib/store";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -30,9 +32,26 @@ const metals = ["Yellow Gold", "Rose Gold", "White Gold"];
 const carats = ["0.30 ct", "0.50 ct", "0.75 ct", "1.00 ct"];
 
 export default function ProductDetailClient({ slug }: { slug: string }) {
-  const product = getProduct(slug)!;
   const { addToCart, toggleWishlist, wishlist, toggleCompare, setCartOpen } =
     useShop();
+
+  const [product, setProduct] = useState<Product | null>(getProduct(slug) || null);
+  const [loading, setLoading] = useState(!product);
+
+  useEffect(() => {
+    if (product) return;
+    // Product not in static list — check custom_products.json
+    fetch(`/custom_products.json?t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((data: Product[]) => {
+        if (Array.isArray(data)) {
+          const found = data.find((p) => p.slug === slug);
+          if (found) setProduct(found);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [slug, product]);
 
   const [mainImg, setMainImg] = useState(0);
   const [metal, setMetal] = useState(metals[0]);
@@ -41,11 +60,32 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const [breakupOpen, setBreakupOpen] = useState(false);
   const [tab, setTab] = useState<"desc" | "info" | "reviews">("desc");
 
-  const images = [product.image, product.hoverImage];
+  if (loading) {
+    return (
+      <div className="container-site py-24 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="container-site py-24 text-center space-y-4">
+        <h1 className="text-2xl font-display font-bold text-primary">Product Not Found</h1>
+        <p className="text-muted-foreground">This product may have been removed or the link is incorrect.</p>
+        <Link href="/products" className="inline-block px-6 py-2.5 bg-primary text-white rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors">
+          Browse All Products
+        </Link>
+      </div>
+    );
+  }
+
+  const images = [product.image, product.hoverImage].filter(Boolean);
   const breakup = priceBreakup(product);
-  const related = products
+  const allProducts = getAllProducts();
+  const related = allProducts
     .filter((p) => p.category === product.category && p.id !== product.id)
-    .concat(products.filter((p) => p.category !== product.category))
+    .concat(allProducts.filter((p) => p.category !== product.category))
     .slice(0, 8);
   const wished = wishlist.includes(product.id);
 

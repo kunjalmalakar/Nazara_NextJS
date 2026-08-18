@@ -74,11 +74,28 @@ export const categorySlugs: Record<string, Category> = {
   "bracelets-bangles": "Bracelets & Bangles",
 };
 
+export const getAllProducts = (): Product[] => {
+  if (typeof window !== "undefined") {
+    try {
+      const customStr = localStorage.getItem("nazara_added_products");
+      if (customStr) {
+        const customList: Product[] = JSON.parse(customStr);
+        const existingSlugs = new Set(products.map((p) => p.slug));
+        const filteredCustom = customList.filter((cp) => !existingSlugs.has(cp.slug));
+        return [...filteredCustom, ...products];
+      }
+    } catch (err) {
+      console.error("Error reading custom products:", err);
+    }
+  }
+  return products;
+};
+
 export const getProduct = (slug: string) =>
-  products.find((p) => p.slug === slug);
+  getAllProducts().find((p) => p.slug === slug);
 
 export const getProductById = (id: string) =>
-  products.find((p) => p.id === id);
+  getAllProducts().find((p) => p.id === id);
 
 export const formatINR = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
@@ -88,3 +105,24 @@ export const priceBreakup = (p: Product) => {
   const making = p.price - diamond - metal;
   return { diamond, metal, making, total: p.price };
 };
+
+export const apiProductToProduct = (p: import("./api").ApiProduct): Product => ({
+  id: p._id,
+  slug: p.slug,
+  name: p.name,
+  category: (typeof p.categoryId === "object" ? p.categoryId.name : "Rings") as Category,
+  collection: (p.collectionName as any) || "Diamond Jewellery",
+  price: p.price,
+  rating: p.rating || 4.8,
+  reviews: p.reviewsCount || 12,
+  image: p.images[0] || "/assets/p-ring-solitaire.jpg",
+  hoverImage: p.images[1] || p.images[0] || "/assets/p-ring-fancy.jpg",
+  description: p.description || "",
+  weight: p.weight || "3.2 g",
+  dimensions: p.dimensions || "6 × 6 × 4 mm",
+  purity: p.purity || "18K Gold",
+  clarity: p.clarity || "VS1 / E-F",
+  topSelling: p.tags.includes("top-selling"),
+  featured: p.tags.includes("featured"),
+});
+

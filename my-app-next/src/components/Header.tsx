@@ -47,7 +47,7 @@ const pendantsLinks = ["Solitaire Pendants", "Alphabet Pendants", "Heart Pendant
 const searchTerms = ["rings", "earrings", "necklaces", "bracelets", "pendants"];
 
 export function Header() {
-  const { cartCount, wishlist, setCartOpen, setLoginOpen } = useShop();
+  const { cartCount, wishlist, setCartOpen, setLoginOpen, user, loggedIn } = useShop();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -361,14 +361,25 @@ export function Header() {
         {/* Right: Actions */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
           {/* Account Button */}
-          <button
-            aria-label="Account"
-            onClick={() => setLoginOpen(true)}
-            title="My Account"
-            className="hidden h-9 w-9 items-center justify-center rounded-full bg-transparent text-primary border-2 border-[#4c2344]/40 shadow-sm transition-all duration-300 hover:bg-primary/5 hover:border-[#4c2344] hover:scale-105 active:scale-95 cursor-pointer sm:flex"
-          >
-            <User size={17} />
-          </button>
+          {loggedIn ? (
+            <Link
+              href="/account"
+              aria-label="Account"
+              title={`Account (${user?.fullName || "User"})`}
+              className="hidden h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs shadow-sm transition-all duration-300 hover:scale-105 active:scale-95 sm:flex"
+            >
+              {user?.fullName ? user.fullName.charAt(0).toUpperCase() : <User size={17} />}
+            </Link>
+          ) : (
+            <button
+              aria-label="Account"
+              onClick={() => setLoginOpen(true)}
+              title="My Account"
+              className="hidden h-9 w-9 items-center justify-center rounded-full bg-transparent text-primary border-2 border-[#4c2344]/40 shadow-sm transition-all duration-300 hover:bg-primary/5 hover:border-[#4c2344] hover:scale-105 active:scale-95 cursor-pointer sm:flex"
+            >
+              <User size={17} />
+            </button>
+          )}
 
           {/* Wishlist Button */}
           <Link
@@ -552,7 +563,7 @@ export function Header() {
 
             {/* gifting */}
             <Link 
-              href="/products?highlight=gifting" 
+              href="/gifting" 
               className="py-2 transition-colors hover:text-gold"
             >
               Gifting
@@ -590,7 +601,7 @@ export function Header() {
               <Link href="/products?purity=9KT" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">9KT</Link>
               <Link href="/aabha" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Aabha</Link>
               <Link href="/luna" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Luna</Link>
-              <Link href="/products?highlight=gifting" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Gifting</Link>
+              <Link href="/gifting" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">Gifting</Link>
               <Link href="/products?highlight=new" className="rounded px-3 py-2.5 hover:bg-secondary font-medium">New Launches</Link>
               <div className="border-t border-border/60 my-2"></div>
               <Link href="/customize" className="rounded px-3 py-2.5 hover:bg-secondary">Customize</Link>

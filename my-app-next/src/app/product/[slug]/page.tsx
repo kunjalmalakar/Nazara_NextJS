@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/products";
 import ProductDetailClient from "./product-detail-client";
 
@@ -12,7 +11,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const product = getProduct(slug);
   if (!product) {
     return {
-      title: "Not Found — Nazara Diamonds",
+      title: "Product — Nazara Diamonds",
+      description: "Handcrafted luxury jewellery by Nazara Diamonds.",
     };
   }
   return {
@@ -23,9 +23,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
-  const product = getProduct(slug);
-  if (!product) {
-    notFound();
-  }
+  // Always render client component — it handles custom products from JSON store
   return <ProductDetailClient slug={slug} />;
 }

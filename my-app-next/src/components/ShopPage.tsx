@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { LayoutGrid, List } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { LayoutGrid, List, Loader2 } from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
+  apiProductToProduct,
   categorySlugs,
   formatINR,
-  products,
   type Category,
+  type Product,
 } from "@/lib/products";
+import { apiGetProducts } from "@/lib/api";
 import { PageBanner } from "./Breadcrumb";
 import { ProductCard } from "./ProductCard";
 
@@ -30,15 +33,6 @@ const sortOptions = [
 ];
 
 const MAX_PRICE = 350000;
-
-const isCategoryMatch = (category: string, query: string) => {
-  const cat = category.toLowerCase();
-  const q = query.trim().toLowerCase();
-  if (cat === q) return true;
-  if (cat === q + "s" || cat + "s" === q) return true;
-  if (cat.includes(q) && (q === "bracelet" || q === "bracelets" || q === "bangle" || q === "bangles")) return true;
-  return false;
-};
 
 export function ShopPage({
   categorySlug,
@@ -70,33 +64,129 @@ export function ShopPage({
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [sort, setSort] = useState("popularity");
   const [view, setView] = useState<"grid" | "list">("grid");
-  const [shown, setShown] = useState(16);
 
-  const filtered = useMemo(() => {
-    let list = [...products];
-    if (query) {
-      const q = query.toLowerCase();
-      list = list.filter((p) => 
-        p.name.toLowerCase().includes(q) ||
-        isCategoryMatch(p.category, q) ||
-        p.collection.toLowerCase().includes(q)
-      );
+  // Map category to slug for API call
+  const activeCategorySlug = useMemo(() => {
+    if (actualCategorySlug) return actualCategorySlug;
+    if (selected.length === 1) {
+      const cat = selected[0];
+      const entry = Object.entries(categorySlugs).find(([, v]) => v === cat);
+      return entry ? entry[0] : undefined;
     }
-    if (selected.length > 0)
-      list = list.filter((p) => selected.includes(p.category));
+    return undefined;
+  }, [actualCategorySlug, selected]);
+
+  // Map sort options to API parameters
+  const apiSortParams = useMemo(() => {
+    switch (sort) {
+      case "price-asc":
+        return { sort: "price" as const, order: "asc" as const };
+      case "price-desc":
+        return { sort: "price" as const, order: "desc" as const };
+      case "rating":
+        return { sort: "rating" as const, order: "desc" as const };
+      case "newest":
+        return { sort: "createdAt" as const, order: "desc" as const };
+      default:
+        return { sort: "createdAt" as const, order: "desc" as const };
+    }
+  }, [sort]);
+
+  // Map highlight to tags filter
+  const apiTagParam = useMemo(() => {
+    if (activeHighlight === "bestseller") return "top-selling";
+    if (activeHighlight === "newarrivals") return "new-launch";
+    if (activeHighlight === "hot") return "featured";
+    return undefined;
+  }, [activeHighlight]);
+
+  // ── TanStack Query useInfiniteQuery ──────────────────────────────────────────
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
+    queryKey: [
+      "products",
+      {
+        category: activeCategorySlug,
+        tags: apiTagParam,
+        q: query,
+        sort: apiSortParams.sort,
+        order: apiSortParams.order,
+      },
+    ],
+    queryFn: ({ pageParam = 1 }) =>
+      apiGetProducts({
+        category: activeCategorySlug,
+        tags: apiTagParam,
+        q: query,
+        sort: apiSortParams.sort,
+        order: apiSortParams.order,
+        page: pageParam,
+        limit: 12,
+      }),
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    initialPageParam: 1,
+  });
+
+  // Flatten products across all loaded pages and map to Product objects
+  const rawProducts = useMemo(() => {
+    return data?.pages.flatMap((page) => page.products) ?? [];
+  }, [data]);
+
+  const [serverCustomProducts, setServerCustomProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    // Fetch the shared product store file written by Nazara_Admin
+    // Uses cache-busting to always get the latest version after an admin add
+    fetch(`/custom_products.json?t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((data: any[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setServerCustomProducts(data as Product[]);
+        }
+      })
+      .catch(() => {
+        // File may not exist or be empty — silently ignore
+      });
+  }, []);
+
+  const mappedProducts = useMemo(() => {
+    let list = rawProducts.map(apiProductToProduct);
     
-    // Highlight filter
-    if (activeHighlight) {
-      if (activeHighlight === "bestseller") {
-        list = list.filter((p) => p.topSelling);
-      } else if (activeHighlight === "newarrivals") {
-        list = list.filter((p) => Number(p.id) >= 10);
-      } else if (activeHighlight === "sale") {
-        list = list.filter((p) => p.price < 50000);
-      } else if (activeHighlight === "hot") {
-        list = list.filter((p) => p.featured);
+    // Combine backend products with server-custom products from Nazara_Admin
+    if (serverCustomProducts.length > 0) {
+      const existingSlugs = new Set(list.map((p) => p.slug));
+      const filteredCustom = serverCustomProducts.filter((cp) => !existingSlugs.has(cp.slug));
+      list = [...filteredCustom, ...list];
+    }
+
+    if (typeof window !== "undefined") {
+      try {
+        const customStr = localStorage.getItem("nazara_added_products");
+        if (customStr) {
+          const customList: Product[] = JSON.parse(customStr);
+          const existingSlugs = new Set(list.map((p) => p.slug));
+          const filteredCustom = customList.filter((cp) => !existingSlugs.has(cp.slug));
+          list = [...filteredCustom, ...list];
+        }
+      } catch (err) {
+        console.error("Error loading custom products:", err);
       }
     }
+    return list;
+  }, [rawProducts, serverCustomProducts]);
+
+  // Apply client-side refining for secondary filters (purity, stone, quality, price range)
+  const filtered = useMemo(() => {
+    let list = [...mappedProducts];
 
     // Metal purity filter
     if (purityFilter.length > 0) {
@@ -130,114 +220,91 @@ export function ShopPage({
       list = list.filter((p) => Math.round(p.rating) === ratingFilter);
     }
 
-    switch (sort) {
-      case "price-asc":
-        list.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        list.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        list.sort((a, b) => b.rating - a.rating);
-        break;
-      case "newest":
-        list.sort((a, b) => Number(b.id) - Number(a.id));
-        break;
-      default:
-        list.sort((a, b) => b.reviews - a.reviews);
-    }
     return list;
-  }, [selected, activeHighlight, purityFilter, stoneFilter, qualityFilter, priceRange, ratingFilter, sort, query]);
+  }, [mappedProducts, purityFilter, stoneFilter, qualityFilter, priceRange, ratingFilter]);
 
-  // Base list of products matching search query and category selections
-  const baseList = useMemo(() => {
-    let list = [...products];
-    if (query) {
-      const q = query.toLowerCase();
-      list = list.filter((p) => 
-        p.name.toLowerCase().includes(q) ||
-        isCategoryMatch(p.category, q) ||
-        p.collection.toLowerCase().includes(q)
-      );
-    }
-    if (selected.length > 0) {
-      list = list.filter((p) => selected.includes(p.category));
-    }
-    return list;
-  }, [selected, query]);
+  const totalItems = data?.pages[0]?.pagination.totalItems ?? filtered.length;
 
-  // Helper to count items matching purity
-  const getPurityCount = (pur: string) => {
-    if (pur === "9KT") return 0;
-    return baseList.filter((p) => {
-      if (pur === "14KT") return p.purity.includes("14K");
-      if (pur === "18KT") return p.purity.includes("18K");
-      return false;
-    }).length;
-  };
-
-  // Helper to count items matching clarity VVS/VS
-  const getClarityCount = () => {
-    return baseList.filter((p) => p.clarity.includes("VVS") || p.clarity.includes("VS")).length;
-  };
-
-  // Helper to count items matching rating
-  const getRatingCount = (r: number) => {
-    return baseList.filter((p) => Math.round(p.rating) === r).length;
-  };
-
-  const title = presetCategory ?? "Products";
-  const crumbs = presetCategory
-    ? [{ label: "Products", to: "/products" }, { label: presetCategory }]
-    : [{ label: "Products" }];
-
-  const toggle = (c: Category) =>
+  const toggleCategory = (cat: Category) => {
     setSelected((prev) =>
-      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
     );
+  };
+
+  const togglePurity = (pur: string) => {
+    setPurityFilter((prev) =>
+      prev.includes(pur) ? prev.filter((p) => p !== pur) : [...prev, pur],
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSelected([]);
+    setActiveHighlight(null);
+    setPurityFilter([]);
+    setStoneFilter(null);
+    setQualityFilter(null);
+    setPriceRange(null);
+    setRatingFilter(null);
+  };
 
   return (
     <>
-      <PageBanner title={title} crumbs={crumbs} />
-      <div className="container-site grid gap-10 py-12 lg:grid-cols-[240px_1fr]">
-        {/* Sidebar */}
-        <aside className="space-y-8">
-          <div>
-            <h3 className="mb-4 font-display text-lg font-semibold text-primary pb-2 border-b border-border/60">
-              Shop By Categories
-            </h3>
-            <div className="space-y-2.5 text-sm text-foreground/80">
-              {allCategories.map((c) => (
-                <label key={c} className="flex items-center gap-2.5 cursor-pointer hover:text-gold transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(c)}
-                    onChange={() => toggle(c)}
-                    className="h-4 w-4 rounded border-gray-300 accent-primary text-primary focus:ring-primary cursor-pointer"
-                  />
-                  <span>{c === "Pendant" ? "Pendants" : c}</span>
-                </label>
-              ))}
-            </div>
+      <PageBanner
+        title={
+          presetHighlight
+            ? presetHighlight === "bestseller"
+              ? "Bestselling Jewellery"
+              : presetHighlight === "newarrivals"
+                ? "New Arrivals"
+                : presetHighlight === "sale"
+                  ? "Special Offers"
+                  : "Featured Collection"
+            : presetPurity
+              ? `${presetPurity} Gold Jewellery`
+              : presetCategory
+                ? `${presetCategory} Collection`
+                : query
+                  ? `Search Results for "${query}"`
+                  : "All Jewellery"
+        }
+        crumbs={[
+          { label: "Shop", to: "/products" },
+          ...(presetCategory ? [{ label: presetCategory }] : []),
+          ...(query ? [{ label: `Search: ${query}` }] : []),
+        ]}
+      />
+
+      <div className="container-site py-10 flex flex-col lg:flex-row gap-8">
+        {/* Sidebar Filters */}
+        <aside className="w-full lg:w-64 shrink-0 space-y-6">
+          <div className="flex items-center justify-between border-b border-border pb-4">
+            <h3 className="font-display text-lg font-semibold">Filters</h3>
+            <button
+              onClick={clearAllFilters}
+              className="text-xs text-muted-foreground hover:text-gold transition-colors"
+            >
+              Clear All
+            </button>
           </div>
 
+          {/* Highlights Quick Filter */}
           <div>
-            <h3 className="mb-4 font-display text-lg font-semibold text-primary pb-2 border-b border-border/60">
-              Highlight
-            </h3>
-            <div className="space-y-2 text-sm text-foreground/80 font-medium">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Collections & Highlights
+            </h4>
+            <div className="flex flex-wrap gap-2">
               {[
-                { id: null, label: "All Products" },
-                { id: "bestseller", label: "Best Seller" },
-                { id: "newarrivals", label: "New Arrivals" },
-                { id: "sale", label: "Sale" },
-                { id: "hot", label: "Hot Items" },
+                { id: "bestseller", label: "Top Selling" },
+                { id: "newarrivals", label: "New Launches" },
+                { id: "hot", label: "Featured" },
               ].map((h) => (
                 <button
-                  key={h.label}
-                  onClick={() => setActiveHighlight(h.id)}
-                  className={`block text-left w-full py-1 hover:text-gold transition-colors cursor-pointer ${
-                    activeHighlight === h.id ? "text-gold font-bold" : "text-foreground/75"
+                  key={h.id}
+                  onClick={() => setActiveHighlight(activeHighlight === h.id ? null : h.id)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium border transition-all ${
+                    activeHighlight === h.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border hover:border-gold"
                   }`}
                 >
                   {h.label}
@@ -246,142 +313,70 @@ export function ShopPage({
             </div>
           </div>
 
+          {/* Categories */}
           <div>
-            <h3 className="mb-4 font-display text-lg font-semibold text-primary pb-2 border-b border-border/60">
-              Filter by Choice Of Metal
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {["9KT", "14KT", "18KT"].map((m) => {
-                const count = getPurityCount(m);
-                const isSelected = purityFilter.includes(m);
-                return (
-                  <button
-                    key={m}
-                    onClick={() =>
-                      setPurityFilter((prev) =>
-                        prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
-                      )
-                    }
-                    className={`px-3 py-1.5 text-xs font-semibold rounded border transition-all cursor-pointer ${
-                      isSelected
-                        ? "border-primary bg-primary text-white"
-                        : "border-border bg-card text-foreground/80 hover:border-primary/50"
-                    }`}
-                  >
-                    {m} ({count})
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="mb-4 font-display text-lg font-semibold text-primary pb-2 border-b border-border/60">
-              Filter by Stone
-            </h3>
-            <button
-              onClick={() => setStoneFilter((prev) => (prev ? null : "Diamond"))}
-              className={`px-3 py-1.5 text-xs font-semibold rounded border transition-all cursor-pointer ${
-                stoneFilter
-                  ? "border-primary bg-primary text-white"
-                  : "border-border bg-card text-foreground/80 hover:border-primary/50"
-              }`}
-            >
-              Diamond
-            </button>
-          </div>
-
-          <div>
-            <h3 className="mb-4 font-display text-lg font-semibold text-primary pb-2 border-b border-border/60">
-              Filter by Diamond Quality
-            </h3>
-            <button
-              onClick={() => setQualityFilter((prev) => (prev ? null : "VVS-VS"))}
-              className={`px-3 py-1.5 text-xs font-semibold rounded border transition-all cursor-pointer ${
-                qualityFilter
-                  ? "border-primary bg-primary text-white"
-                  : "border-border bg-card text-foreground/80 hover:border-primary/50"
-              }`}
-            >
-              VVS-VS ({getClarityCount()})
-            </button>
-          </div>
-
-          <div>
-            <h3 className="mb-4 font-display text-lg font-semibold text-primary pb-2 border-b border-border/60">
-              Price Filter
-            </h3>
-            <div className="space-y-2 text-sm text-foreground/80 font-medium">
-              {[
-                { label: "All", range: null },
-                { label: "₹0–₹112,730", range: { min: 0, max: 112730 } },
-                { label: "₹112,730–₹225,460", range: { min: 112730, max: 225460 } },
-                { label: "₹225,460–₹338,190", range: { min: 225460, max: 338190 } },
-                { label: "₹338,190–₹450,920", range: { min: 338190, max: 450920 } },
-              ].map((r) => (
-                <button
-                  key={r.label}
-                  onClick={() => setPriceRange(r.range)}
-                  className={`block text-left w-full py-1 hover:text-gold transition-colors cursor-pointer ${
-                    (priceRange === null && r.range === null) ||
-                    (priceRange && r.range && priceRange.min === r.range.min && priceRange.max === r.range.max)
-                      ? "text-gold font-bold"
-                      : "text-foreground/75"
-                  }`}
-                >
-                  {r.label}
-                </button>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Categories
+            </h4>
+            <div className="space-y-2">
+              {allCategories.map((cat) => (
+                <label key={cat} className="flex items-center gap-2.5 text-sm cursor-pointer hover:text-gold transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(cat)}
+                    onChange={() => toggleCategory(cat)}
+                    className="accent-[var(--color-primary)] rounded"
+                  />
+                  <span>{cat}</span>
+                </label>
               ))}
             </div>
           </div>
 
+          {/* Metal Purity */}
           <div>
-            <h3 className="mb-4 font-display text-lg font-semibold text-primary pb-2 border-b border-border/60">
-              Average rating
-            </h3>
-            <div className="space-y-2.5 text-sm">
-              {[5, 4, 3, 2, 1].map((r) => {
-                const count = getRatingCount(r);
-                return (
-                  <button
-                    key={r}
-                    onClick={() => setRatingFilter((prev) => (prev === r ? null : r))}
-                    className={`flex items-center gap-2 hover:text-gold transition-colors w-full cursor-pointer ${
-                      ratingFilter === r ? "text-gold font-bold" : "text-foreground/80"
-                    }`}
-                  >
-                    <span className="flex text-amber-400 text-base">
-                      {"★".repeat(r)}
-                      {"☆".repeat(5 - r)}
-                    </span>
-                    <span className="text-muted-foreground text-xs">({count})</span>
-                  </button>
-                );
-              })}
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Purity
+            </h4>
+            <div className="space-y-2">
+              {["14KT", "18KT", "22KT"].map((pur) => (
+                <label key={pur} className="flex items-center gap-2.5 text-sm cursor-pointer hover:text-gold transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={purityFilter.includes(pur)}
+                    onChange={() => togglePurity(pur)}
+                    className="accent-[var(--color-primary)] rounded"
+                  />
+                  <span>{pur} Gold</span>
+                </label>
+              ))}
             </div>
           </div>
         </aside>
 
-        {/* Main */}
-        <div>
+        {/* Product Grid Area */}
+        <div className="flex-1">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
-              Showing 1–{Math.min(shown, filtered.length)} of {filtered.length}{" "}
-              results
+              Showing {filtered.length} of {totalItems} items
             </p>
             <div className="flex items-center gap-3">
               <div className="hidden gap-1 sm:flex">
                 <button
                   aria-label="Grid view"
                   onClick={() => setView("grid")}
-                  className={`grid h-8 w-8 place-items-center rounded border ${view === "grid" ? "border-primary text-primary" : "border-border text-muted-foreground"}`}
+                  className={`grid h-8 w-8 place-items-center rounded border ${
+                    view === "grid" ? "border-primary text-primary" : "border-border text-muted-foreground"
+                  }`}
                 >
                   <LayoutGrid size={14} />
                 </button>
                 <button
                   aria-label="List view"
                   onClick={() => setView("list")}
-                  className={`grid h-8 w-8 place-items-center rounded border ${view === "list" ? "border-primary text-primary" : "border-border text-muted-foreground"}`}
+                  className={`grid h-8 w-8 place-items-center rounded border ${
+                    view === "list" ? "border-primary text-primary" : "border-border text-muted-foreground"
+                  }`}
                 >
                   <List size={14} />
                 </button>
@@ -400,9 +395,18 @@ export function ShopPage({
             </div>
           </div>
 
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+              <Loader2 size={32} className="animate-spin text-primary" />
+              <p className="text-sm">Loading handcrafted creations...</p>
+            </div>
+          ) : isError ? (
+            <div className="py-20 text-center text-destructive">
+              Failed to load products. Make sure NestJS backend is running.
+            </div>
+          ) : filtered.length === 0 ? (
             <p className="py-20 text-center text-muted-foreground">
-              No products match your filters.
+              No products match your active filters.
             </p>
           ) : (
             <div
@@ -412,16 +416,28 @@ export function ShopPage({
                   : "grid grid-cols-1 gap-6"
               }
             >
-              {filtered.slice(0, shown).map((p) => (
+              {filtered.map((p) => (
                 <ProductCard key={p.id} product={p} layout={view} />
               ))}
             </div>
           )}
 
-          {shown < filtered.length && (
+          {/* Load More Button */}
+          {hasNextPage && (
             <div className="mt-10 text-center">
-              <button className="btn-outline" onClick={() => setShown(shown + 8)}>
-                Load More
+              <button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className="btn-outline min-w-[200px] disabled:opacity-50"
+              >
+                {isFetchingNextPage ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 size={16} className="animate-spin" />
+                    Loading more...
+                  </span>
+                ) : (
+                  "Load More Products"
+                )}
               </button>
             </div>
           )}

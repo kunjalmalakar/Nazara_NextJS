@@ -8,8 +8,42 @@ import { PageBanner } from "@/components/Breadcrumb";
 import { StarRating } from "@/components/StarRating";
 
 export default function WishlistClient() {
-  const { wishlist, toggleWishlist, addToCart } = useShop();
+  const { wishlist, toggleWishlist, addToCart, loggedIn, setLoginOpen, isAuthLoading } = useShop();
   const items = wishlist.map(getProductById).filter(Boolean);
+
+  if (isAuthLoading) {
+    return (
+      <>
+        <PageBanner title="Wishlist" crumbs={[{ label: "Wishlist" }]} />
+        <div className="container-site py-16 flex items-center justify-center">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            Loading your wishlist...
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!loggedIn) {
+    return (
+      <>
+        <PageBanner title="Wishlist" crumbs={[{ label: "Wishlist" }]} />
+        <div className="container-site py-16 text-center">
+          <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-8 flex flex-col items-center gap-4">
+            <Heart size={44} className="text-gold" />
+            <h2 className="font-display text-2xl font-semibold">Sign in to view your Wishlist</h2>
+            <p className="text-sm text-muted-foreground">
+              Save your favorite diamond creations across devices and keep track of pieces you love.
+            </p>
+            <button onClick={() => setLoginOpen(true)} className="btn-primary mt-2 w-full">
+              Login to Your Account
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

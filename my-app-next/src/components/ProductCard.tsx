@@ -20,9 +20,9 @@ export function ProductCard({
 
   if (layout === "list") {
     return (
-      <div className="group flex flex-col sm:flex-row gap-6 p-5 border border-border/60 rounded bg-white hover:shadow-md transition-all">
+      <div className="group flex flex-col sm:flex-row gap-6 p-5 border border-[#EAD5E2] rounded-2xl bg-white hover:shadow-xl transition-all">
         {/* Left Side: Image */}
-        <div className="relative aspect-square w-full sm:w-48 shrink-0 bg-white rounded overflow-hidden border border-border/40">
+        <div className="relative aspect-square w-full sm:w-48 shrink-0 bg-[#FAF3EE] rounded-xl overflow-hidden border border-border/30">
           <Link
             href={`/product/${product.slug}`}
             className="block h-full w-full relative"
@@ -44,52 +44,52 @@ export function ProductCard({
               className="absolute inset-0 h-full w-full scale-105 object-cover opacity-0 transition-all duration-500 group-hover:scale-100 group-hover:opacity-100"
             />
           </Link>
-          <div className="absolute right-2 top-2 flex flex-col gap-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute right-2 top-2 flex flex-col gap-2 z-10">
             <button
               aria-label="Add to wishlist"
               onClick={() => toggleWishlist(product.id)}
-              className={`grid h-7 w-7 place-items-center rounded-full border border-border bg-white text-foreground shadow-sm transition-colors hover:bg-primary hover:text-white ${wished ? "bg-primary text-white" : ""}`}
+              className={`grid h-8 w-8 place-items-center rounded-full border border-border/30 bg-white text-[#3C1A35] shadow-sm transition-all hover:bg-primary hover:text-white ${wished ? "bg-primary text-white" : ""}`}
             >
-              <Heart size={12} fill={wished ? "currentColor" : "none"} />
+              <Heart size={14} fill={wished ? "currentColor" : "none"} />
             </button>
             <button
               aria-label="Compare"
               onClick={() => toggleCompare(product.id)}
-              className={`grid h-7 w-7 place-items-center rounded-full border border-border bg-white text-foreground shadow-sm transition-colors hover:bg-primary hover:text-white ${compared ? "bg-primary text-white" : ""}`}
+              className={`grid h-8 w-8 place-items-center rounded-full border border-border/30 bg-white text-[#3C1A35] shadow-sm transition-all hover:bg-primary hover:text-white ${compared ? "bg-primary text-white" : ""}`}
             >
-              <Shuffle size={12} />
+              <Shuffle size={14} />
             </button>
             <button
               aria-label="Quick view"
               onClick={() => setQuickViewId(product.id)}
-              className="grid h-7 w-7 place-items-center rounded-full border border-border bg-white text-foreground shadow-sm transition-colors hover:bg-primary hover:text-white"
+              className="grid h-8 w-8 place-items-center rounded-full border border-border/30 bg-white text-[#3C1A35] shadow-sm transition-all hover:bg-primary hover:text-white"
             >
-              <Eye size={12} />
+              <Eye size={14} />
             </button>
           </div>
         </div>
 
         {/* Right Side: Details */}
-        <div className="flex-1 flex flex-col justify-center gap-1.5">
+        <div className="flex-1 flex flex-col justify-center gap-2">
           <Link
             href={`/product/${product.slug}`}
-            className="font-sans text-lg font-bold text-primary hover:text-gold transition-colors"
+            className="font-display text-lg font-bold text-[#3C1A35] hover:text-gold transition-colors"
           >
             {product.name}
           </Link>
-          <div className="flex text-amber-400 text-sm">
-            {"★".repeat(Math.round(product.rating))}
-            {"☆".repeat(5 - Math.round(product.rating))}
+          <div className="flex text-amber-400 text-sm tracking-widest">
+            {"★".repeat(Math.round(product.rating || 5))}
+            {"☆".repeat(5 - Math.round(product.rating || 5))}
           </div>
-          <p className="text-base font-bold text-gold">
+          <p className="text-base font-bold text-gold font-display">
             From {formatINR(product.price)}
           </p>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-3 my-1">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 my-1">
             {product.description}
           </p>
           <Link
             href={`/product/${product.slug}`}
-            className="inline-block px-5 py-2.5 rounded bg-primary text-white font-medium text-xs uppercase tracking-wider transition-colors hover:bg-primary/95 mt-2 self-start cursor-pointer"
+            className="text-xs sm:text-sm font-semibold text-[#3C1A35] hover:text-gold transition-colors hover:underline underline-offset-4 cursor-pointer mt-1 self-start"
           >
             Select Options
           </Link>
@@ -98,10 +98,12 @@ export function ProductCard({
     );
   }
 
-  // Grid view (default)
+  // Grid view (default - matching reference image)
   return (
-    <div className="group relative flex flex-col border border-border/60 rounded overflow-hidden bg-white hover:shadow-md transition-all duration-300">
-      <div className="relative aspect-square w-full bg-white overflow-hidden">
+    <div className="group relative flex flex-col border border-[#EAD5E2] rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-300">
+      
+      {/* Top Image Container */}
+      <div className="relative aspect-square w-full bg-[#FAF3EE] overflow-hidden flex items-center justify-center">
         <Link
           href={`/product/${product.slug}`}
           className="block h-full w-full relative"
@@ -115,7 +117,7 @@ export function ProductCard({
             className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 group-hover:opacity-0"
           />
           <img
-            src={product.hoverImage}
+            src={product.hoverImage || product.image}
             alt=""
             loading="lazy"
             width={900}
@@ -123,51 +125,67 @@ export function ProductCard({
             className="absolute inset-0 h-full w-full scale-105 object-cover opacity-0 transition-all duration-500 group-hover:scale-100 group-hover:opacity-100"
           />
         </Link>
-        <div className="absolute right-3 top-3 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+
+        {/* Vertical Stack Action Buttons on Top Right */}
+        <div className="absolute right-3 top-3 flex flex-col gap-2 z-10">
+          {/* Wishlist Button */}
           <button
             aria-label="Add to wishlist"
             onClick={() => toggleWishlist(product.id)}
-            className={`grid h-8 w-8 place-items-center rounded-full border border-border bg-white text-foreground shadow-sm transition-colors hover:bg-primary hover:text-white ${wished ? "bg-primary text-white" : ""}`}
+            className={`grid h-9 w-9 place-items-center rounded-full border border-border/30 bg-white text-[#3C1A35] shadow-md transition-all duration-300 hover:bg-primary hover:text-white ${wished ? "bg-primary text-white" : ""}`}
           >
-            <Heart size={14} fill={wished ? "currentColor" : "none"} />
+            <Heart size={16} fill={wished ? "currentColor" : "none"} />
           </button>
+
+          {/* Compare Button */}
           <button
             aria-label="Compare"
             onClick={() => toggleCompare(product.id)}
-            className={`grid h-8 w-8 place-items-center rounded-full border border-border bg-white text-foreground shadow-sm transition-colors hover:bg-primary hover:text-white ${compared ? "bg-primary text-white" : ""}`}
+            className={`grid h-9 w-9 place-items-center rounded-full border border-border/30 bg-white text-[#3C1A35] shadow-md transition-all duration-300 hover:bg-primary hover:text-white ${compared ? "bg-primary text-white" : ""}`}
           >
-            <Shuffle size={14} />
+            <Shuffle size={16} />
           </button>
+
+          {/* Quick View Button */}
           <button
             aria-label="Quick view"
             onClick={() => setQuickViewId(product.id)}
-            className="grid h-8 w-8 place-items-center rounded-full border border-border bg-white text-foreground shadow-sm transition-colors hover:bg-primary hover:text-white"
+            className="grid h-9 w-9 place-items-center rounded-full border border-border/30 bg-white text-[#3C1A35] shadow-md transition-all duration-300 hover:bg-primary hover:text-white"
           >
-            <Eye size={14} />
+            <Eye size={16} />
           </button>
         </div>
       </div>
-      <div className="flex flex-col items-center gap-1 p-4 text-center bg-muted border-t border-border/30 flex-1 min-h-[125px]">
+
+      {/* Bottom Content Container (Lavender / Soft Blush Background matching SS) */}
+      <div className="flex flex-col items-center justify-center gap-1.5 p-4 sm:p-5 text-center bg-[#F2E5ED] border-t border-[#EAD5E2]/40 flex-1 min-h-[135px]">
         <Link
           href={`/product/${product.slug}`}
-          className="font-sans text-[14px] font-semibold text-primary transition-colors hover:text-gold line-clamp-1"
+          className="font-display text-sm sm:text-base font-semibold text-[#3C1A35] transition-colors hover:text-gold line-clamp-1"
         >
           {product.name}
         </Link>
-        <div className="flex text-amber-400 text-[11px] my-0.5">
-          {"★".repeat(Math.round(product.rating))}
-          {"☆".repeat(5 - Math.round(product.rating))}
+
+        {/* Rating Stars */}
+        <div className="flex text-amber-400 text-xs sm:text-sm my-0.5 tracking-widest justify-center">
+          {"★".repeat(Math.round(product.rating || 5))}
+          {"☆".repeat(5 - Math.round(product.rating || 5))}
         </div>
-        <p className="text-[13px] font-bold text-gold">
+
+        {/* Price */}
+        <p className="text-sm sm:text-base font-bold text-gold font-display">
           From {formatINR(product.price)}
         </p>
+
+        {/* Select Options Link */}
         <Link
           href={`/product/${product.slug}`}
-          className="text-[11px] font-semibold text-primary hover:text-gold transition-all duration-300 opacity-0 group-hover:opacity-100 mt-1 cursor-pointer"
+          className="text-xs sm:text-sm font-semibold text-[#3C1A35] hover:text-gold transition-all duration-300 mt-1 cursor-pointer hover:underline underline-offset-4"
         >
           Select Options
         </Link>
       </div>
+
     </div>
   );
 }
@@ -224,7 +242,7 @@ export function ProductCarousel({ items }: { items: Product[] }) {
         <button
           aria-label="Scroll left"
           onClick={() => scroll("left")}
-          className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 hidden md:grid h-10 w-10 place-items-center rounded-full bg-white text-foreground shadow-md hover:bg-primary hover:text-white transition-colors cursor-pointer border border-border/40"
+          className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 hidden md:grid h-10 w-10 place-items-center rounded-full bg-white text-[#3C1A35] shadow-md hover:bg-primary hover:text-white transition-colors cursor-pointer border border-border/40"
         >
           <ChevronLeft size={20} />
         </button>
@@ -247,7 +265,7 @@ export function ProductCarousel({ items }: { items: Product[] }) {
         <button
           aria-label="Scroll right"
           onClick={() => scroll("right")}
-          className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 hidden md:grid h-10 w-10 place-items-center rounded-full bg-white text-foreground shadow-md hover:bg-primary hover:text-white transition-colors cursor-pointer border border-border/40"
+          className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 hidden md:grid h-10 w-10 place-items-center rounded-full bg-white text-[#3C1A35] shadow-md hover:bg-primary hover:text-white transition-colors cursor-pointer border border-border/40"
         >
           <ChevronRight size={20} />
         </button>

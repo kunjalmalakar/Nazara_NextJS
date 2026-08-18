@@ -1,0 +1,71 @@
+[
+  {
+    "id": "custom-1786649156912",
+    "slug": "rose-gold-ring",
+    "name": "Rose Gold Ring",
+    "title": "Rose Gold Ring",
+    "category": "Ring",
+    "collection": "Gold Jewellery",
+    "price": 24999,
+    "originalPrice": 29999,
+    "rating": 5,
+    "reviews": 1,
+    "image": "blob:http://localhost:5174/d80cd864-e0dd-47f3-a4af-b57e9b9d2968",
+    "hoverImage": "blob:http://localhost:5174/d80cd864-e0dd-47f3-a4af-b57e9b9d2968",
+    "images": [
+      "blob:http://localhost:5174/d80cd864-e0dd-47f3-a4af-b57e9b9d2968"
+    ],
+    "description": "Rose Gold Ring - Handcrafted 24KT Gold ring with fine diamond settings.",
+    "weight": "0.2 g",
+    "dimensions": "Standard",
+    "purity": "24KT",
+    "clarity": "VS2",
+    "metal": "Gold",
+    "stock": 10,
+    "sku": "hdbfe",
+    "hsnCode": "7113",
+    "huid": "HUID1234",
+    "diamonds": [
+      {
+        "id": "1",
+        "shape": "Round",
+        "color": "D-F",
+        "clarity": "VS2",
+        "sizeMm": "24",
+        "totalCt": 2,
+        "qtyPcs": 1,
+        "weightCt": 0.16666666,
+        "rateRs": 0
+      }
+    ],
+    "gemstones": [
+      {
+        "id": "1",
+        "stone": "ruby",
+        "shape": "Select",
+        "totalCt": 0,
+        "qty": 1,
+        "weightCt": 0,
+        "rateRs": 0
+      }
+    ],
+    "accessories": [
+      {
+        "id": "1",
+        "category": "Belt",
+        "material": "",
+        "color": "",
+        "size": "42mm",
+        "qty": 1,
+        "rateRs": 0
+      }
+    ],
+    "certificates": [
+      {
+        "id": "1",
+        "certNo": "",
+        "lab": ""
+      }
+    ]
+  }
+]
